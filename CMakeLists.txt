@@ -53,7 +53,15 @@ macro(add_triton_library name)
     add_dependencies(${name} ${ARG_DEPENDS})
   endif()
   if(ARG_LINK_LIBS)
-    target_link_libraries(${name} PUBLIC ${ARG_LINK_LIBS})
+    set(FILTERED_LIBS "")
+    foreach(lib ${ARG_LINK_LIBS})
+        if(NOT lib MATCHES "^(MLIR|LLVM)" AND NOT lib STREQUAL "TritonIR" AND NOT lib STREQUAL "TritonAnalysis" AND NOT lib STREQUAL "TritonTransforms" AND NOT lib STREQUAL "TritonGPUIR")
+            list(APPEND FILTERED_LIBS ${lib})
+        endif()
+    endforeach()
+    if(FILTERED_LIBS)
+      target_link_libraries(${name} PUBLIC ${FILTERED_LIBS})
+    endif()
   endif()
 endmacro()
 
@@ -83,13 +91,6 @@ target_link_libraries(_C PRIVATE
     MathExtDialect
     AuxiliaryDialect
     TritonTransformsExtend
-    MLIRIR
-    MLIRPass
-    MLIRTransforms
-    MLIRRewrite
-    MLIRLinalgDialect
-    MLIRMathDialect
-    MLIRArithDialect
 )
 
 set_target_properties(_C PROPERTIES OUTPUT_NAME "_C")
