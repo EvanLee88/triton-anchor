@@ -345,6 +345,7 @@ void init_triton_ir(py::module &&m) {
   py::class_<Attribute>(m, "attribute", py::module_local());
   py::class_<IntegerAttr, Attribute>(m, "integer_attr", py::module_local());
   py::class_<BoolAttr, Attribute>(m, "bool_attr", py::module_local());
+  py::class_<StringAttr, Attribute>(m, "string_attr", py::module_local());
 
   // Ops
   py::class_<OpState>(m, "OpState", py::module_local())
