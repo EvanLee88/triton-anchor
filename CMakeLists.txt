@@ -231,6 +231,7 @@ target_link_libraries(_C PRIVATE
     MathExtDialect
     AuxiliaryDialect
     TritonTransformsExtend
+    triton
 )
 
 # 确保 _C.so 输出到 triton_anchor 目录
