@@ -188,4 +188,4 @@ htmlcov/
 # .python-version
 
 # temp
-./docs/*
+./docs/*triton/include/

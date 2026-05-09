@@ -133,6 +133,34 @@ class CMakeBuild(build_ext):
             cwd=cmake_dir,
         )
 
+        # 收集所有的头文件 (.h 和 .inc) 到 triton/include 目录，以便打包到 wheel 中
+        include_out_dir = os.path.join(get_base_dir(), "triton", "include")
+        os.makedirs(include_out_dir, exist_ok=True)
+
+        src_include_dirs = [
+            os.path.join(get_base_dir(), "upstream", "include"),
+            os.path.join(get_base_dir(), "csrc", "include"),
+        ]
+        build_include_dirs = [
+            os.path.join(cmake_dir, "upstream", "include"),
+            os.path.join(cmake_dir, "csrc", "include"),
+        ]
+
+        def copy_headers(src_dir):
+            if not os.path.exists(src_dir): return
+            for root, _, files in os.walk(src_dir):
+                for f in files:
+                    if f.endswith(".h") or f.endswith(".inc") or f.endswith(".def"):
+                        src_path = os.path.join(root, f)
+                        rel_path = os.path.relpath(src_path, src_dir)
+                        dst_path = os.path.join(include_out_dir, rel_path)
+                        os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+                        shutil.copy2(src_path, dst_path)
+
+        for d in src_include_dirs + build_include_dirs:
+            copy_headers(d)
+
+
 
 def get_packages():
     """同时安装 triton 和 triton_anchor 两个 Python 包"""
@@ -169,6 +197,11 @@ setup(
     install_requires=["filelock"],
     package_data={
         "triton/tools": ["compile.h", "compile.c"],
+        "triton": [
+            "include/**/*.h", "include/**/*.inc", "include/**/*.def",
+            "include/**/**/*.h", "include/**/**/*.inc", "include/**/**/*.def",
+            "include/**/**/**/*.h", "include/**/**/**/*.inc", "include/**/**/**/*.def",
+        ],
     },
     include_package_data=True,
     ext_modules=[CMakeExtension("triton", "triton/_C/")],
