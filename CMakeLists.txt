@@ -176,6 +176,14 @@ if(TRITON_BUILD_PYTHON_MODULE)
     MLIRIndexToLLVM
     MLIRGPUToROCDLTransforms
 
+    # 为 triton-anchor 补充的 Linalg 依赖
+    MLIRLinalgDialect
+    MLIRLinalgTransforms
+    MLIRLinalgUtils
+    MLIRMemRefDialect
+    MLIRTensorDialect
+    MLIRAffineDialect
+
     # LLVM
     LLVMPasses
     LLVMNVPTXCodeGen
@@ -236,12 +244,6 @@ target_link_libraries(_C PRIVATE
     TritonDialectUtils
     DialectUtils
     LinalgExtDialectUtils
-    MLIRLinalgDialect
-    MLIRLinalgTransforms
-    MLIRLinalgUtils
-    MLIRMemRefDialect
-    MLIRTensorDialect
-    MLIRAffineDialect
     triton
 )
 
