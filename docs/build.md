@@ -76,7 +76,7 @@ uv pip install setuptools wheel pybind11
 
 4. 喝杯咖啡，这需要花费相当长的一段时间。
 
-5. 编译完成后，你的 LLVM 构建目录为 `$HOME/llvm-project/build`。请在接下来的安装步骤中将其配置给 `LLVM_SYSPATH` 环境变量。
+5. 编译完成后，你的 LLVM 构建目录为 `$HOME/llvm-project/build`。你可以直接将其作为参数传给 `envsetup.sh` 脚本来进行环境变量初始化。
 
 ## 4. 安装 triton-anchor
 
@@ -86,8 +86,12 @@ uv pip install setuptools wheel pybind11
 # 假设你已经克隆了代码到 /triton/triton-anchor
 cd /triton/triton-anchor
 
-# 配置 LLVM 工具链路径 (必需，供 CMake 寻找 MLIR/LLVM)
-export LLVM_SYSPATH=/path/to/llvm-release
+# 使用提供的 envsetup.sh 脚本快速配置 LLVM 编译环境变量
+# 默认配置路径为 /triton/llvm-release
+source envsetup.sh
+
+# 如果您有自定义的 LLVM 构建路径，也可以直接将其作为参数传入：
+# source envsetup.sh /path/to/llvm-release
 
 # 1. 直接安装（开发模式）
 uv pip install --no-build-isolation -e .
