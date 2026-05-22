@@ -11,7 +11,7 @@
 > [!IMPORTANT]
 > **AnchorIR**（锚点中间表示）是 triton-anchor 定义的 **双轨统一输出契约**——所有 TTIR 到硬件感知 IR 的转换，无论走 Linalg 路径还是 TritonGPU 路径，其输出都被纳入 AnchorIR 契约管理。
 
-📋 **[路线图](ROADMAP.md)** · 📖 **[构建指南](docs/build.md)** · 🔌 **[后端接入指南](docs/custom_backend.md)** · 🐛 **[报告问题](../../issues/new/choose)**
+📋 **[路线图](ROADMAP.md)** · 📖 **[构建指南](docs/build.md)** · 🔌 **[后端接入指南](docs/custom_backend.md)** · 🔒 **[安全策略](SECURITY.md)** · 🐛 **[报告问题](../../issues/new/choose)**
 
 ---
 
