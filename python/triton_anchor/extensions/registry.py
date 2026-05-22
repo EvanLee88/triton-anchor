@@ -70,9 +70,7 @@ class DSLExtensionRegistry:
                     f"(target={plugin.target_backend})"
                 )
             except Exception as e:
-                logger.warning(
-                    f"Failed to load DSL extension '{ep.name}': {e}"
-                )
+                logger.warning(f"Failed to load DSL extension '{ep.name}': {e}")
 
     @classmethod
     def register(cls, plugin: DSLExtensionPlugin) -> None:
@@ -144,6 +142,7 @@ class DSLExtensionRegistry:
         Looks for ops matching registered extension namespaces.
         """
         import re
+
         # Match all "namespace.op_name" patterns
         pattern = re.compile(r'"?(\w+)\.\w[\w.]*"?')
         found = set()

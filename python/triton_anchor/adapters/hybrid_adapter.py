@@ -18,7 +18,7 @@ from __future__ import annotations
 import logging
 from typing import Any, List
 
-from .base import ILinalgOptAdapter, AdapterConversionError
+from .base import ILinalgOptAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +47,18 @@ class HybridAdapter(ILinalgOptAdapter):
         #     logger.info("Structured analysis failed, falling back to AxisInfo")
 
         from .triton_linalg_adapter import TritonLinalgAdapter
+
         return TritonLinalgAdapter().convert(ttir_module, metadata, context)
 
     def get_output_dialects(self) -> List[str]:
         return [
-            "linalg", "linalg_ext", "tensor", "memref",
-            "arith", "math", "scf", "func", "aux",
+            "linalg",
+            "linalg_ext",
+            "tensor",
+            "memref",
+            "arith",
+            "math",
+            "scf",
+            "func",
+            "aux",
         ]

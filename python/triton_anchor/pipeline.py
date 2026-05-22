@@ -65,14 +65,14 @@ def build_ttir_pipeline(pm, hw: Optional[HWCapability] = None):
 
         # GPU path needs tensor pointer rewriting (CRITICAL — must not silently skip)
         if hw.compute_paradigm == ComputeParadigm.GPGPU:
-            _require_pass(passes.ttir, 'add_rewrite_tensor_pointer', pm)
+            _require_pass(passes.ttir, "add_rewrite_tensor_pointer", pm)
 
         # Optional loop unrolling (safe to skip if unavailable)
         if hw.enable_loop_unroll:
-            _try_add_pass(passes.ttir, 'add_loop_unroll', pm)
+            _try_add_pass(passes.ttir, "add_loop_unroll", pm)
 
         # FlagTree extra optimization (optional, auto-probe)
-        _try_add_pass(passes.ttir, 'add_expression_restructing', pm)
+        _try_add_pass(passes.ttir, "add_expression_restructing", pm)
 
 
 def _try_add_pass(module, pass_name, pm, **kwargs):
@@ -97,7 +97,7 @@ def _require_pass(module, pass_name, pm, **kwargs):
     """
     fn = getattr(module, pass_name, None)
     if fn is None:
-        mod_name = getattr(module, '__name__', str(module))
+        mod_name = getattr(module, "__name__", str(module))
         raise RuntimeError(
             f"Required pass '{pass_name}' not found in module '{mod_name}'. "
             f"This pass is critical for the current compilation path. "
@@ -143,6 +143,7 @@ def inject_hw_attributes(mod, hw: HWCapability, metadata: dict):
     """
     try:
         from triton._C.libtriton import ir
+
         builder = ir.builder(mod.context)
 
         mod.set_attr("hw.name", builder.get_string_attr(hw.name))

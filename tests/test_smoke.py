@@ -30,12 +30,12 @@ skipped = 0
 def run_test(name, fn):
     """执行单个测试用例，统计通过/失败"""
     global passed, failed
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"[TEST] {name}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     try:
         fn()
-        print(f"  ✅ PASSED")
+        print("  ✅ PASSED")
         passed += 1
     except Exception as e:
         print(f"  ❌ FAILED: {e}")
@@ -46,10 +46,10 @@ def run_test(name, fn):
 def skip_test(name, reason):
     """跳过测试用例"""
     global skipped
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"[SKIP] {name}")
     print(f"  ⏭️  {reason}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     skipped += 1
 
 
@@ -57,9 +57,11 @@ def skip_test(name, reason):
 # 测试用例
 # ============================================================================
 
+
 def test_import_triton():
     """验证 triton 核心包可以正常导入"""
     import triton
+
     print(f"  triton version: {triton.__version__}")
     print(f"  triton path: {triton.__file__}")
 
@@ -67,24 +69,28 @@ def test_import_triton():
 def test_import_triton_anchor():
     """验证 triton_anchor 包可以正常导入"""
     import triton_anchor
+
     print(f"  triton_anchor version: {triton_anchor.__version__}")
     print(f"  triton_anchor path: {triton_anchor.__file__}")
 
     # 验证公共 API 导出
-    assert hasattr(triton_anchor, 'HWCapability'), "缺少 HWCapability 导出"
-    assert hasattr(triton_anchor, 'ComputeParadigm'), "缺少 ComputeParadigm 导出"
-    assert hasattr(triton_anchor, 'AnchorIRTrack'), "缺少 AnchorIRTrack 导出"
-    assert hasattr(triton_anchor, 'AnchorIRValidator'), "缺少 AnchorIRValidator 导出"
-    assert hasattr(triton_anchor, 'build_ttir_pipeline'), "缺少 build_ttir_pipeline 导出"
+    assert hasattr(triton_anchor, "HWCapability"), "缺少 HWCapability 导出"
+    assert hasattr(triton_anchor, "ComputeParadigm"), "缺少 ComputeParadigm 导出"
+    assert hasattr(triton_anchor, "AnchorIRTrack"), "缺少 AnchorIRTrack 导出"
+    assert hasattr(triton_anchor, "AnchorIRValidator"), "缺少 AnchorIRValidator 导出"
+    assert hasattr(triton_anchor, "build_ttir_pipeline"), (
+        "缺少 build_ttir_pipeline 导出"
+    )
     print("  公共 API 导出完整 ✓")
 
 
 def test_libtriton_binding():
     """验证 C++ 绑定 (libtriton.so) 可以正常加载"""
     from triton._C import libtriton
-    assert hasattr(libtriton, 'ir'), "libtriton 缺少 ir 模块"
-    assert hasattr(libtriton, 'passes'), "libtriton 缺少 passes 模块"
-    print(f"  libtriton 加载成功")
+
+    assert hasattr(libtriton, "ir"), "libtriton 缺少 ir 模块"
+    assert hasattr(libtriton, "passes"), "libtriton 缺少 passes 模块"
+    print("  libtriton 加载成功")
     print(f"  ir 模块: {libtriton.ir}")
     print(f"  passes 模块: {libtriton.passes}")
 
@@ -92,10 +98,11 @@ def test_libtriton_binding():
 def test_anchor_passes_binding():
     """验证 triton-anchor 的 C++ Pass 绑定是否注册"""
     from triton._C.libtriton import anchor
+
     print(f"  anchor 绑定模块加载成功: {anchor}")
 
     # 验证关键 API 存在
-    assert hasattr(anchor, 'load_dialects'), "缺少 load_dialects"
+    assert hasattr(anchor, "load_dialects"), "缺少 load_dialects"
     print("  anchor.load_dialects ✓")
 
 
@@ -105,22 +112,25 @@ def test_mlir_context_and_dialects():
 
     ctx = ir.context()
     assert ctx is not None, "MLIR Context 创建失败"
-    print(f"  MLIR Context 创建成功")
+    print("  MLIR Context 创建成功")
 
     # 加载上游 Triton 方言
     ir.load_dialects(ctx)
-    print(f"  Triton 方言加载成功 ✓")
+    print("  Triton 方言加载成功 ✓")
 
     # 加载 triton-anchor 方言（triton-linalg 扩展）
     anchor.load_dialects(ctx)
-    print(f"  Anchor 方言加载成功 (linalg_ext, math_ext, aux) ✓")
+    print("  Anchor 方言加载成功 (linalg_ext, math_ext, aux) ✓")
 
 
 def test_hw_capability():
     """验证 HWCapability 数据结构的创建与校验"""
     from triton_anchor.hw_capability import (
-        HWCapability, ComputeParadigm,
-        TensorCapability, MatrixCapability, GPGPUCapability,
+        HWCapability,
+        ComputeParadigm,
+        TensorCapability,
+        MatrixCapability,
+        GPGPUCapability,
     )
 
     # 测试 Tensor Processor 类型（如 Sophgo TPU）
@@ -162,14 +172,16 @@ def test_hw_capability():
     # 测试校验：Paradigm 与 Cap 不匹配时应该抛出异常
     try:
         HWCapability(
-            name="bad", arch_family="tpu",
+            name="bad",
+            arch_family="tpu",
             compute_paradigm=ComputeParadigm.TENSOR_PROCESSOR,
-            anchor_ir_track="linalg", ptr_model="axis_info",
+            anchor_ir_track="linalg",
+            ptr_model="axis_info",
             # 故意不传 tensor_cap
         )
         raise AssertionError("应该抛出 ValueError，但没有")
     except ValueError:
-        print(f"  校验逻辑正确：缺少 tensor_cap 时抛出 ValueError ✓")
+        print("  校验逻辑正确：缺少 tensor_cap 时抛出 ValueError ✓")
 
     # 测试 GPUTarget 兼容性
     target = hw_tpu.to_gpu_target()
@@ -179,7 +191,9 @@ def test_hw_capability():
 def test_anchor_ir_validator():
     """验证 AnchorIR Validator 的方言白名单/黑名单校验"""
     from triton_anchor.anchor_ir import (
-        AnchorIRValidator, AnchorIRTrack, AnchorIRError,
+        AnchorIRValidator,
+        AnchorIRTrack,
+        AnchorIRError,
     )
 
     validator = AnchorIRValidator(track=AnchorIRTrack.LINALG)
@@ -199,7 +213,7 @@ def test_anchor_ir_validator():
     violations = validator.validate(valid_ir)
     assert len(violations) == 0, f"合法 IR 不应有违规: {violations}"
     assert validator.is_valid(valid_ir)
-    print(f"  合法 IR 校验通过 ✓")
+    print("  合法 IR 校验通过 ✓")
 
     # 包含黑名单方言的 IR（tt 是已被 lower 掉的过渡方言）
     invalid_ir = """
@@ -218,14 +232,14 @@ def test_anchor_ir_validator():
         validator.validate_and_raise(invalid_ir, context="test")
         raise AssertionError("应该抛出 AnchorIRError")
     except AnchorIRError:
-        print(f"  validate_and_raise 正确抛出 AnchorIRError ✓")
+        print("  validate_and_raise 正确抛出 AnchorIRError ✓")
 
     # 测试两阶段验证
     violations_pre = validator.validate_pre_hook(valid_ir)
     assert len(violations_pre) == 0
     violations_post = validator.validate_post_hook(valid_ir, ext_allowed={"ppl"})
     assert len(violations_post) == 0
-    print(f"  两阶段验证 API 正常 ✓")
+    print("  两阶段验证 API 正常 ✓")
 
 
 def test_ttir_pipeline():
@@ -240,7 +254,7 @@ def test_ttir_pipeline():
     pm = ir.pass_manager(ctx)
     # 不传 hw 参数，仅构建 7 个 mandatory passes
     build_ttir_pipeline(pm, hw=None)
-    print(f"  TTIR Pipeline 构建成功 (7 mandatory passes) ✓")
+    print("  TTIR Pipeline 构建成功 (7 mandatory passes) ✓")
 
 
 def test_adapter_discovery():
@@ -257,13 +271,13 @@ def test_adapter_discovery():
 
     # triton-linalg 应该始终可用（通过 entry_points 注册）
     if "triton-linalg" in adapters:
-        print(f"  triton-linalg adapter 已注册 ✓")
+        print("  triton-linalg adapter 已注册 ✓")
     else:
-        print(f"  ⚠️  triton-linalg adapter 未发现（可能 entry_points 未安装）")
+        print("  ⚠️  triton-linalg adapter 未发现（可能 entry_points 未安装）")
 
 
-import triton
-import triton.language as tl
+import triton  # noqa: E402
+import triton.language as tl  # noqa: E402
 
 
 @triton.jit
@@ -329,8 +343,9 @@ def test_ttir_generation():
 # 主入口
 # ============================================================================
 
+
 def main():
-    print(f"🔍 triton-anchor 冒烟测试")
+    print("🔍 triton-anchor 冒烟测试")
     print(f"   Python: {sys.version.split()[0]}")
     print(f"   平台: {sys.platform}")
 
@@ -353,10 +368,10 @@ def main():
     run_test("TTIR 生成 (AST → MLIR)", test_ttir_generation)
 
     # 结果汇总
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     total = passed + failed + skipped
     print(f"结果: {passed} 通过, {failed} 失败, {skipped} 跳过 (共 {total})")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if failed > 0:
         sys.exit(1)

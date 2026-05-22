@@ -79,11 +79,12 @@ class TritonLinalgAdapter(ILinalgPybindAdapter):
             from triton._C.libtriton import ir
         except ImportError:
             raise AdapterConversionError(
-                self.name(), detail="triton_anchor._C not available. Is the C++ extension built?"
+                self.name(),
+                detail="triton_anchor._C not available. Is the C++ extension built?",
             )
 
         # Check that anchor passes are available
-        if not hasattr(passes, 'triton_to_linalg'):
+        if not hasattr(passes, "triton_to_linalg"):
             raise AdapterConversionError(
                 self.name(), detail="anchor_passes.triton_to_linalg not available."
             )
@@ -108,13 +109,13 @@ class TritonLinalgAdapter(ILinalgPybindAdapter):
         try:
             pm.run(ttir_module)
         except Exception as e:
-            logger.error(f"TritonLinalgAdapter conversion failed for kernel "
-                         f"'{metadata.get('name', '<unknown>')}'")
+            logger.error(
+                f"TritonLinalgAdapter conversion failed for kernel "
+                f"'{metadata.get('name', '<unknown>')}'"
+            )
             traceback.print_exc()
             raise AdapterConversionError(
-                self.name(),
-                kernel_name=metadata.get("name", ""),
-                detail=str(e)
+                self.name(), kernel_name=metadata.get("name", ""), detail=str(e)
             )
 
         return ttir_module
@@ -125,10 +126,10 @@ class TritonLinalgAdapter(ILinalgPybindAdapter):
 
         # Note: triton_to_ppl has been stripped. The backend should handle it if needed.
         tl.add_wrap_func_body_with_single_block(pm)
-        
+
         # We need common passes from libtriton
         from triton._C.libtriton.passes import common
-        
+
         common.add_inliner(pm)
         common.add_canonicalizer(pm)
         tl.add_canonicalize_triton(pm)
@@ -169,6 +170,14 @@ class TritonLinalgAdapter(ILinalgPybindAdapter):
 
     def get_output_dialects(self) -> List[str]:
         return [
-            "linalg", "linalg_ext", "tensor", "memref",
-            "arith", "math", "math_ext", "scf", "func", "aux",
+            "linalg",
+            "linalg_ext",
+            "tensor",
+            "memref",
+            "arith",
+            "math",
+            "math_ext",
+            "scf",
+            "func",
+            "aux",
         ]

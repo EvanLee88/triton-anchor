@@ -85,4 +85,3 @@ class TestHWCapability:
                 ptr_model="structured",
                 # Missing matrix_cap!
             )
-

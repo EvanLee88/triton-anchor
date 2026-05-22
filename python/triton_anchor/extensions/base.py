@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -57,6 +57,7 @@ class BuiltinSpec:
             doc="SMT matrix dot product using AME instructions",
         )
     """
+
     name: str
     ir_builder: Optional[Callable] = None
     semantic_fn: Optional[Callable] = None
@@ -170,4 +171,5 @@ class DSLExtensionPlugin(ABC):
 
 class IncompatibleExtensionError(Exception):
     """Raised when a DSL extension is incompatible with the target backend."""
+
     pass

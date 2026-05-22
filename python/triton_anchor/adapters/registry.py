@@ -151,10 +151,12 @@ class AdapterRegistry:
 
 class AdapterNotFoundError(Exception):
     """Raised when no suitable adapter is found."""
+
     pass
 
 
 # ── Convenience function ─────────────────────────────────────────────
+
 
 def get_adapter(hw: HWCapability) -> ITritonToLinalgAdapter:
     """Shortcut for ``AdapterRegistry.get_adapter(hw)``."""

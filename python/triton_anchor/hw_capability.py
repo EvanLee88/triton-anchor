@@ -21,12 +21,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Set, Tuple, Literal, Union
+from typing import TYPE_CHECKING, Optional, Set, Tuple, Literal
+
+if TYPE_CHECKING:
+    from .anchor_ir import AnchorIRTrack
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # Compute Paradigm — the three fundamental ISA families
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class ComputeParadigm(Enum):
     """Compute paradigm of the target hardware.
@@ -34,6 +38,7 @@ class ComputeParadigm(Enum):
     This enum captures the *essential nature* of the hardware, not just
     a parameter — it determines the entire lowering strategy.
     """
+
     AME_MATRIX = "ame_matrix"
     """CPU-internal matrix extension (RISC-V AME, ARM SME).
     Characteristics: matrix registers, CPU cache hierarchy, no DMA."""
@@ -51,12 +56,14 @@ class ComputeParadigm(Enum):
 # Paradigm-Specific Capability Descriptors
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @dataclass(frozen=True)
 class MatrixCapability:
     """Capability descriptor for AME (Advanced Matrix Extension) hardware.
 
     Used by: SpacemiT X60, 玄铁 AME, ARM SME.
     """
+
     num_matrix_registers: int = 8
     tile_shape: Tuple[int, int] = (8, 8)
     supported_dtypes: Set[str] = field(default_factory=lambda: {"fp32", "fp16", "int8"})
@@ -71,9 +78,10 @@ class TensorCapability:
 
     Used by: Sophgo BM1684X, Google TPU.
     """
+
     num_cores: int = 1
-    local_mem_size: int = 0       # bytes, per-core local SRAM
-    global_mem_size: int = 0      # bytes, HBM/DDR
+    local_mem_size: int = 0  # bytes, per-core local SRAM
+    global_mem_size: int = 0  # bytes, HBM/DDR
     dma_channels: int = 1
     supported_dtypes: Set[str] = field(default_factory=lambda: {"fp32", "fp16", "int8"})
     max_tensor_dims: int = 4
@@ -85,18 +93,22 @@ class GPGPUCapability:
 
     Used by: NVIDIA GPU, AMD GPU, USC GPU.
     """
+
     num_warps: int = 4
     warp_size: int = 32
     shared_mem_size: int = 49152  # bytes
     num_stages: int = 2
     num_ctas: int = 1
     cluster_dims: Tuple[int, int, int] = (1, 1, 1)
-    supported_dtypes: Set[str] = field(default_factory=lambda: {"fp32", "fp16", "bf16", "int8"})
+    supported_dtypes: Set[str] = field(
+        default_factory=lambda: {"fp32", "fp16", "bf16", "int8"}
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # HWCapability — the unified hardware descriptor
 # ═══════════════════════════════════════════════════════════════════════
+
 
 @dataclass
 class HWCapability:
@@ -126,22 +138,23 @@ class HWCapability:
         )
 
     """
+
     # ── Identity ─────────────────────────────────────────────────────
-    name: str                           # e.g. "spacemit-x60", "sophgo-bm1684x"
-    arch_family: str                    # "riscv", "tpu", "gpu"
+    name: str  # e.g. "spacemit-x60", "sophgo-bm1684x"
+    arch_family: str  # "riscv", "tpu", "gpu"
 
     # ── Compilation Strategy ─────────────────────────────────────────
     compute_paradigm: ComputeParadigm
-    anchor_ir_track: 'AnchorIRTrack'   # Decoupled from paradigm; backend controls
+    anchor_ir_track: "AnchorIRTrack"  # Decoupled from paradigm; backend controls
     ptr_model: Literal["structured", "axis_info", "hybrid", "gpu"]
 
     # ── Adapter Override ─────────────────────────────────────────────
     preferred_adapter: Optional[str] = None  # e.g. "triton-shared", "triton-linalg"
 
     # ── Paradigm-Specific Capabilities (mutually exclusive) ──────────
-    matrix_cap: Optional[MatrixCapability] = None    # AME
-    tensor_cap: Optional[TensorCapability] = None    # Tensor
-    gpgpu_cap: Optional[GPGPUCapability] = None      # gpGPU
+    matrix_cap: Optional[MatrixCapability] = None  # AME
+    tensor_cap: Optional[TensorCapability] = None  # Tensor
+    gpgpu_cap: Optional[GPGPUCapability] = None  # gpGPU
 
     # ── Optional Flags ───────────────────────────────────────────────
     enable_loop_unroll: bool = False
@@ -165,6 +178,7 @@ class HWCapability:
 
         try:
             from triton.backends.compiler import GPUTarget
+
             return GPUTarget(backend=backend, arch=arch, warp_size=warp_size)
         except ImportError:
             # Fallback when triton is not installed (e.g., in tests)
@@ -205,17 +219,18 @@ class HWCapability:
         if self.compute_paradigm == ComputeParadigm.AME_MATRIX:
             if self.matrix_cap is None:
                 raise ValueError(
-                    f"AME_MATRIX paradigm requires matrix_cap (hw: {self.name})")
+                    f"AME_MATRIX paradigm requires matrix_cap (hw: {self.name})"
+                )
 
         elif self.compute_paradigm == ComputeParadigm.TENSOR_PROCESSOR:
             if self.tensor_cap is None:
                 raise ValueError(
-                    f"TENSOR_PROCESSOR paradigm requires tensor_cap (hw: {self.name})")
+                    f"TENSOR_PROCESSOR paradigm requires tensor_cap (hw: {self.name})"
+                )
 
         elif self.compute_paradigm == ComputeParadigm.GPGPU:
             if self.gpgpu_cap is None:
-                raise ValueError(
-                    f"GPGPU paradigm requires gpgpu_cap (hw: {self.name})")
+                raise ValueError(f"GPGPU paradigm requires gpgpu_cap (hw: {self.name})")
 
     def __post_init__(self):
         """Validate capability fields and resolve AnchorIRTrack.
@@ -227,7 +242,10 @@ class HWCapability:
         # Resolve string → enum if needed (backward compat)
         if isinstance(self.anchor_ir_track, str):
             from .anchor_ir import AnchorIRTrack
-            object.__setattr__(self, 'anchor_ir_track', AnchorIRTrack(self.anchor_ir_track))
+
+            object.__setattr__(
+                self, "anchor_ir_track", AnchorIRTrack(self.anchor_ir_track)
+            )
 
         self.validate()
 

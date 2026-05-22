@@ -94,11 +94,13 @@ class TritonSharedAdapter(ILinalgOptAdapter):
                     "or ensure triton-shared-opt is on PATH.\n"
                     "  pip install triton-shared  (when available)\n"
                     "  export TRITON_SHARED_OPT_PATH=/path/to/triton-shared-opt"
-                )
+                ),
             )
 
         # ── Out-of-process conversion ────────────────────────────────
-        ttir_text = str(ttir_module) if not isinstance(ttir_module, str) else ttir_module
+        ttir_text = (
+            str(ttir_module) if not isinstance(ttir_module, str) else ttir_module
+        )
 
         flags = self._get_pipeline_flags()
 
@@ -116,12 +118,11 @@ class TritonSharedAdapter(ILinalgOptAdapter):
                 raise AdapterConversionError(
                     self.name(),
                     kernel_name=metadata.get("name", ""),
-                    detail=f"triton-shared-opt failed with exit code {e.returncode}"
+                    detail=f"triton-shared-opt failed with exit code {e.returncode}",
                 )
             except FileNotFoundError:
                 raise AdapterConversionError(
-                    self.name(),
-                    detail=f"triton-shared-opt not found at: {opt_path}"
+                    self.name(), detail=f"triton-shared-opt not found at: {opt_path}"
                 )
 
             return dst.read_text()
@@ -147,6 +148,13 @@ class TritonSharedAdapter(ILinalgOptAdapter):
 
     def get_output_dialects(self) -> List[str]:
         return [
-            "linalg", "tensor", "memref", "arith", "math",
-            "scf", "func", "tptr", "triton_structured",
+            "linalg",
+            "tensor",
+            "memref",
+            "arith",
+            "math",
+            "scf",
+            "func",
+            "tptr",
+            "triton_structured",
         ]

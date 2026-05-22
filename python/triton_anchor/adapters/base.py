@@ -29,7 +29,7 @@ Future extensibility:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 
 class ITritonToLinalgAdapter(ABC):
@@ -84,6 +84,7 @@ class ITritonToLinalgAdapter(ABC):
             True if valid, False otherwise.
         """
         from ..anchor_ir import AnchorIRValidator
+
         validator = AnchorIRValidator()
         ir_text = str(linalg_ir) if not isinstance(linalg_ir, str) else linalg_ir
         return validator.is_valid(ir_text)
@@ -109,6 +110,7 @@ class ITritonToLinalgAdapter(ABC):
 # ABI-Isolated Adapter Base Classes (v0.1.3)
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class ILinalgOptAdapter(ITritonToLinalgAdapter, ABC):
     """Adapter variant using out-of-process MLIR opt tool (subprocess).
 
@@ -123,6 +125,7 @@ class ILinalgOptAdapter(ITritonToLinalgAdapter, ABC):
 
     Used by: TritonSharedAdapter (spine-triton / triton-shared)
     """
+
     pass
 
 
@@ -140,6 +143,7 @@ class ILinalgPybindAdapter(ITritonToLinalgAdapter, ABC):
 
     Used by: TritonLinalgAdapter (triton_race / Sophgo TPU)
     """
+
     pass
 
 

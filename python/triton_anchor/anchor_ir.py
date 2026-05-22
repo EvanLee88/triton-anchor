@@ -28,7 +28,7 @@ Stability guarantee: the allowed dialect whitelist is append-only.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Set, Optional, Tuple, TYPE_CHECKING
 
@@ -40,6 +40,7 @@ if TYPE_CHECKING:
 # AnchorIR Track — the two fundamental output forms
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class AnchorIRTrack(Enum):
     """AnchorIR dual-track output specification.
 
@@ -47,15 +48,17 @@ class AnchorIRTrack(Enum):
     compute paradigm and IR track (e.g., a RISC-V GPU with Tensor Core
     could use TRITON_GPU track with RISC-V instructions).
     """
-    LINALG = "linalg"           # Linalg Track (AME / Tensor)
-    TRITON_GPU = "triton_gpu"   # TritonGPU Track (gpGPU)
+
+    LINALG = "linalg"  # Linalg Track (AME / Tensor)
+    TRITON_GPU = "triton_gpu"  # TritonGPU Track (gpGPU)
 
 
 class AnchorIRDialectStatus(Enum):
     """Classification of MLIR dialects in AnchorIR."""
+
     ALLOWED = "allowed"
     FORBIDDEN = "forbidden"
-    EXTENSION = "extension"    # Allowed only when declared via get_allowed_dialects()
+    EXTENSION = "extension"  # Allowed only when declared via get_allowed_dialects()
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -64,51 +67,51 @@ class AnchorIRDialectStatus(Enum):
 
 # Linalg Track base whitelist
 LINALG_TRACK_ALLOWED: Set[str] = {
-    "linalg",           # Core computation
-    "linalg_ext",       # Extended ops (scatter, gather, atomic) from triton-linalg
-    "tensor",           # Tensor operations
-    "memref",           # Memory reference operations
-    "arith",            # Arithmetic operations
-    "math",             # Math operations (sin, cos, exp, ...)
-    "math_ext",         # Extended math (from triton-linalg)
-    "scf",              # Structured control flow
-    "func",             # Function operations
-    "cf",               # Control flow (basic blocks)
-    "affine",           # Affine operations
-    "aux",              # Auxiliary operations (from triton-linalg)
-    "index",            # Index operations
-    "bufferization",    # Bufferization operations
-    "vector",           # Vector operations
+    "linalg",  # Core computation
+    "linalg_ext",  # Extended ops (scatter, gather, atomic) from triton-linalg
+    "tensor",  # Tensor operations
+    "memref",  # Memory reference operations
+    "arith",  # Arithmetic operations
+    "math",  # Math operations (sin, cos, exp, ...)
+    "math_ext",  # Extended math (from triton-linalg)
+    "scf",  # Structured control flow
+    "func",  # Function operations
+    "cf",  # Control flow (basic blocks)
+    "affine",  # Affine operations
+    "aux",  # Auxiliary operations (from triton-linalg)
+    "index",  # Index operations
+    "bufferization",  # Bufferization operations
+    "vector",  # Vector operations
 }
 
 # Linalg Track forbidden dialects
 LINALG_TRACK_FORBIDDEN: Set[str] = {
-    "tt",               # Triton dialect — must be fully lowered
-    "triton",           # Alias for tt
-    "tts",              # Triton-shared transition dialect
-    "tptr",             # Triton pointer transition dialect
-    "smt",              # DSL Extension Python namespace — must be lowered to xsmt.*
-    "triton_gpu",       # TritonGPU dialect (wrong track)
-    "nvidia_gpu",       # NVIDIA-specific
+    "tt",  # Triton dialect — must be fully lowered
+    "triton",  # Alias for tt
+    "tts",  # Triton-shared transition dialect
+    "tptr",  # Triton pointer transition dialect
+    "smt",  # DSL Extension Python namespace — must be lowered to xsmt.*
+    "triton_gpu",  # TritonGPU dialect (wrong track)
+    "nvidia_gpu",  # NVIDIA-specific
 }
 
 # TritonGPU Track base whitelist
 TRITON_GPU_TRACK_ALLOWED: Set[str] = {
-    "triton_gpu",       # TritonGPU dialect (with Encoding attributes)
-    "tt",               # Triton Op retained (with Encoding)
-    "arith",            # Arithmetic operations
-    "math",             # Math operations
-    "scf",              # Structured control flow
-    "func",             # Function operations
-    "gpu",              # GPU-specific operations (optional)
-    "nvgpu",            # NVIDIA GPU operations (optional)
+    "triton_gpu",  # TritonGPU dialect (with Encoding attributes)
+    "tt",  # Triton Op retained (with Encoding)
+    "arith",  # Arithmetic operations
+    "math",  # Math operations
+    "scf",  # Structured control flow
+    "func",  # Function operations
+    "gpu",  # GPU-specific operations (optional)
+    "nvgpu",  # NVIDIA GPU operations (optional)
 }
 
 # TritonGPU Track forbidden dialects
 TRITON_GPU_TRACK_FORBIDDEN: Set[str] = {
-    "tts",              # Transition dialects forbidden
-    "tptr",             # Transition dialects forbidden
-    "smt",              # DSL Extension Python namespace
+    "tts",  # Transition dialects forbidden
+    "tptr",  # Transition dialects forbidden
+    "smt",  # DSL Extension Python namespace
 }
 
 
@@ -138,9 +141,11 @@ FORBIDDEN_DIALECTS: Set[str] = LINALG_TRACK_FORBIDDEN.copy()
 # AnchorIR Violation
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @dataclass
 class AnchorIRViolation:
     """A single violation found during AnchorIR validation."""
+
     line_number: int
     dialect: str
     op_name: str
@@ -153,6 +158,7 @@ class AnchorIRViolation:
 # ═══════════════════════════════════════════════════════════════════════
 # Two-Phase AnchorIR Validator
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class AnchorIRValidator:
     """Validates that an MLIR module conforms to the AnchorIR specification.
@@ -181,12 +187,12 @@ class AnchorIRValidator:
 
     # Pattern to match MLIR operations: "dialect.op_name"
     _OP_PATTERN = re.compile(
-        r'^\s*'                    # leading whitespace
-        r'(?:%\w+\s*(?:,\s*%\w+\s*)*=\s*)?'  # optional results: %foo, %bar =
-        r'"?'                      # optional quote
-        r'(\w+)\.(\w[\w.]*)'      # dialect.op_name
-        r'"?',                     # optional quote
-        re.MULTILINE
+        r"^\s*"  # leading whitespace
+        r"(?:%\w+\s*(?:,\s*%\w+\s*)*=\s*)?"  # optional results: %foo, %bar =
+        r'"?'  # optional quote
+        r"(\w+)\.(\w[\w.]*)"  # dialect.op_name
+        r'"?',  # optional quote
+        re.MULTILINE,
     )
 
     def __init__(
@@ -212,7 +218,9 @@ class AnchorIRValidator:
         if extra_forbidden:
             self.forbidden |= extra_forbidden
 
-    def _scan_ops(self, ir_text: str, allowed: Set[str], forbidden: Set[str]) -> List[AnchorIRViolation]:
+    def _scan_ops(
+        self, ir_text: str, allowed: Set[str], forbidden: Set[str]
+    ) -> List[AnchorIRViolation]:
         """Scan IR text and report violations against given whitelist/forbidden sets."""
         violations: List[AnchorIRViolation] = []
         lines = ir_text.splitlines()
@@ -228,22 +236,26 @@ class AnchorIRValidator:
                 op_name = f"{dialect}.{match.group(2)}"
 
                 if dialect in forbidden:
-                    violations.append(AnchorIRViolation(
-                        line_number=line_no,
-                        dialect=dialect,
-                        op_name=op_name,
-                        message=f"Forbidden dialect '{dialect}' must be fully lowered before AnchorIR"
-                    ))
-                elif dialect not in allowed:
-                    violations.append(AnchorIRViolation(
-                        line_number=line_no,
-                        dialect=dialect,
-                        op_name=op_name,
-                        message=(
-                            f"Unknown dialect '{dialect}'. "
-                            f"Register it via backend's get_allowed_dialects()."
+                    violations.append(
+                        AnchorIRViolation(
+                            line_number=line_no,
+                            dialect=dialect,
+                            op_name=op_name,
+                            message=f"Forbidden dialect '{dialect}' must be fully lowered before AnchorIR",
                         )
-                    ))
+                    )
+                elif dialect not in allowed:
+                    violations.append(
+                        AnchorIRViolation(
+                            line_number=line_no,
+                            dialect=dialect,
+                            op_name=op_name,
+                            message=(
+                                f"Unknown dialect '{dialect}'. "
+                                f"Register it via backend's get_allowed_dialects()."
+                            ),
+                        )
+                    )
 
         return violations
 
@@ -304,7 +316,7 @@ class AnchorIRValidator:
         """Validate and raise ``AnchorIRError`` if violations are found."""
         violations = self.validate(ir_text)
         if violations:
-            header = f"AnchorIR validation failed"
+            header = "AnchorIR validation failed"
             if context:
                 header += f" for {context}"
             details = "\n".join(str(v) for v in violations)
@@ -313,5 +325,5 @@ class AnchorIRValidator:
 
 class AnchorIRError(Exception):
     """Raised when an MLIR module violates the AnchorIR specification."""
-    pass
 
+    pass
