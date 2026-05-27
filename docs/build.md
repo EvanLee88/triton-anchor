@@ -16,10 +16,10 @@ docker run --privileged -itd --name triton-anchor-dev \
 docker exec -it triton-anchor-dev bash
 
 # 更新包索引
-apt-get update
+apt update
 
 # 安装基础编译工具链和依赖
-apt-get install -y \
+apt install -y \
     build-essential \
     cmake \
     ninja-build \
