@@ -86,6 +86,7 @@ uv pip install setuptools wheel pybind11
 |--------|--------|------|
 | `WORKSPACE` | `/workspace` | 工作目录，支持手动指定 |
 | `LLVM_BUILD_DIR` | `$WORKSPACE/llvm-release` | LLVM 编译产物主目录，支持手动指定 |
+| `TTGPU` | 空 | 是否启用特殊pass |
 
 你可以通过如下方式来初始化环境：
 
@@ -96,6 +97,12 @@ source envsetup.sh
 # 如果您有自定义的 LLVM 构建路径，请通过环境变量传入：
 export LLVM_BUILD_DIR=/path/to/llvm-release
 source envsetup.sh
+```
+
+如果需要启用特殊pass，需要指定该环境变量
+
+```bash
+export TTGPU=1
 ```
 
 ## 5. 安装 triton-anchor
