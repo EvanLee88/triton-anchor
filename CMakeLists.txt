@@ -11,6 +11,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+if(DEFINED ENV{TTGPU})
+  set(TTGPU ON)
+else()
+  set(TTGPU OFF)
+endif()
+
 # ═══════════════════════════════════════════════════════════════════════
 # LLVM / MLIR 查找
 # ═══════════════════════════════════════════════════════════════════════
@@ -71,6 +77,11 @@ set(TRITON_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/triton")
 # ═══════════════════════════════════════════════════════════════════════
 include_directories(${MLIR_INCLUDE_DIRS})
 include_directories(${LLVM_INCLUDE_DIRS})
+
+if(TTGPU)
+  include_directories(BEFORE ${CMAKE_SOURCE_DIR}/csrc/include/ttgpu)
+endif()
+
 # 上游 Triton 头文件
 include_directories(${UPSTREAM_DIR}/include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/triton/include)  # TableGen 生成
@@ -136,6 +147,11 @@ set(TRITON_ANCHOR_EXPORTED_TARGETS
     MathExtDialect
     AuxiliaryDialect
     TritonIR
+    TritonGPUIR
+    TritonNvidiaGPUIR
+    TritonAnalysis
+    TritonGPUTransforms
+    TritonGPUToLLVM
 )
 foreach(target ${TRITON_ANCHOR_EXPORTED_TARGETS})
     if(TARGET ${target})
@@ -161,9 +177,16 @@ if(TRITON_BUILD_PYTHON_MODULE)
   set(TRITON_BACKENDS_TUPLE "()")
   add_compile_definitions(TRITON_BACKENDS_TUPLE=${TRITON_BACKENDS_TUPLE})
 
+  if(TTGPU)
+    set(IR_CC "${CMAKE_SOURCE_DIR}/csrc/lib/ttgpu/ir.cc")
+  else()
+    set(IR_CC "${PYTHON_SRC_PATH}/ir.cc")
+  endif()
+
   add_library(triton SHARED
     ${PYTHON_SRC_PATH}/main.cc
-    ${PYTHON_SRC_PATH}/ir.cc
+    # ${PYTHON_SRC_PATH}/ir.cc
+    ${IR_CC}
     ${PYTHON_SRC_PATH}/passes.cc
     ${PYTHON_SRC_PATH}/interpreter.cc
     ${PYTHON_SRC_PATH}/llvm.cc
@@ -195,6 +218,11 @@ if(TRITON_BUILD_PYTHON_MODULE)
     MLIRSCFTransforms
     MLIRIndexToLLVM
     MLIRGPUToROCDLTransforms
+
+    $<$<BOOL:${TTGPU}>:MLIRFTVMToLLVMIRTranslation>
+    TritonAnalysis
+    TritonTransforms
+    TritonGPUTransforms
 
     # 为 triton-anchor 补充的 Linalg 依赖
     MLIRLinalgDialect
